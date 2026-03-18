@@ -1,11 +1,11 @@
-import OpenAI from 'openai'
- 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-})
- 
 export async function POST(req) {
   try {
+    const { OpenAI } = await import('openai')
+    
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY
+    })
+ 
     const body = await req.json()
     const { brief, request } = body
  
@@ -23,7 +23,7 @@ ${request}
  
 Write a complete professional Change Order document that includes:
 1. Change Order number and date
-2. Original scope summary (quote the brief)
+2. Original scope summary quoting the brief directly
 3. Description of new work requested
 4. Additional hours estimate and recommended fee
 5. Client approval section with signature line
