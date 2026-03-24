@@ -7,34 +7,38 @@ export default function Upgrade() {
   ]
 
   return (
-    <main className="min-h-screen bg-white flex items-center justify-center px-6">
-      <div className="max-w-md w-full text-center">
-        <div className="text-4xl font-bold mb-2">ScopeGuard Pro</div>
-        <div className="text-gray-400 mb-8">You have used your 3 free change orders this month</div>
+    <main style={{ minHeight: '100vh', background: '#080C0A', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+      <div style={{ maxWidth: '440px', width: '100%', textAlign: 'center' }}>
 
-        <div className="text-6xl font-bold mb-1">£12</div>
-        <div className="text-gray-400 mb-8">per month · cancel any time</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '32px' }}>
+          <img src="/logo.png" alt="Clovert" style={{ height: '36px', width: 'auto' }} />
+          <span style={{ fontSize: '22px', fontWeight: '700', letterSpacing: '-0.4px', background: 'linear-gradient(135deg, #7EE89A, #3DB85C)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Clovert</span>
+        </div>
 
-        <ul className="text-left space-y-3 mb-8">
+        <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.4)', marginBottom: '8px' }}>Clovert Pro</div>
+        <div style={{ fontSize: '64px', fontWeight: '800', color: '#fff', letterSpacing: '-2px', lineHeight: '1', marginBottom: '6px' }}>£12</div>
+        <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.35)', marginBottom: '36px' }}>per month · cancel any time</div>
+
+        <ul style={{ listStyle: 'none', padding: 0, marginBottom: '32px', textAlign: 'left' }}>
           {features.map(f => (
-            <li key={f} className="flex items-center gap-3 text-gray-700 text-sm">
-              <span className="text-green-500 font-bold text-base">✓</span>
+            <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', fontSize: '14px', color: 'rgba(255,255,255,0.7)' }}>
+              <span style={{ color: '#7EE89A', fontWeight: '700', fontSize: '16px' }}>✓</span>
               {f}
             </li>
           ))}
         </ul>
 
-        {/* Replace the href with your Stripe Payment Link from Step 14 */}
         <a
-          href="https://buy.stripe.com/test_9B614o0677Kq5Yx3Yp6EU00"
-          className="block w-full bg-black text-white py-4 rounded-lg font-semibold text-base hover:bg-gray-800 transition-colors"
+          href="https://buy.stripe.com/REPLACE_WITH_YOUR_LINK"
+          style={{ display: 'block', width: '100%', background: 'linear-gradient(135deg, #7EE89A, #3DB85C)', color: '#fff', padding: '16px', borderRadius: '10px', textDecoration: 'none', fontWeight: '700', fontSize: '16px', letterSpacing: '-0.2px', boxShadow: '0 4px 24px rgba(61,184,92,0.3)', marginBottom: '14px' }}
         >
-          Upgrade now — £12/month
+          Upgrade to Clovert Pro — £12/month
         </a>
 
-        <p className="text-gray-400 text-xs mt-4">
-          Secure payment via Stripe. Cancel any time.
+        <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)' }}>
+          Secure payment via Stripe · Cancel any time
         </p>
+
       </div>
     </main>
   )
