@@ -29,7 +29,7 @@ export default function Upgrade() {
         </ul>
  
         <a
-          href="https://buy.stripe.com/test_9B614o0677Kq5Yx3Yp6EU00"
+          href="https://buy.stripe.com/14A00k4kagNF4Egc1PafS00"
           style={{ display: 'block', width: '100%', background: 'linear-gradient(135deg, #7EE89A, #3DB85C)', color: '#fff', padding: '16px', borderRadius: '10px', textDecoration: 'none', fontWeight: '700', fontSize: '16px', letterSpacing: '-0.2px', boxShadow: '0 4px 24px rgba(61,184,92,0.3)', marginBottom: '14px' }}
         >
           Upgrade to Clovert Pro — £12/month
