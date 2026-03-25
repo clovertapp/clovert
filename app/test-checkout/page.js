@@ -15,7 +15,7 @@ export default function TestCheckout() {
         </div>
 
         <a
-          href="https://buy.stripe.com/REPLACE_WITH_TEST_LINK"
+          href="https://buy.stripe.com/test_9B614o0677Kq5Yx3Yp6EU00"
           style={{ display: 'block', width: '100%', background: 'rgba(240,96,64,0.15)', border: '1px solid rgba(240,96,64,0.3)', color: '#f06040', padding: '16px', borderRadius: '10px', textDecoration: 'none', fontWeight: '700', fontSize: '15px', marginBottom: '14px' }}
         >
           Test Payment — £12/month
