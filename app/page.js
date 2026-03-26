@@ -9,8 +9,17 @@ export default function Home() {
   const [usesLeft, setUsesLeft] = useState(3)
   const [showUpgrade, setShowUpgrade] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [email, setEmail] = useState('')
+  const [emailSubmitted, setEmailSubmitted] = useState(false)
+  const [showEmailModal, setShowEmailModal] = useState(false)
+  const [isPaid, setIsPaid] = useState(false)
 
   useEffect(() => {
+    const storedEmail = localStorage.getItem('clovert_email')
+    if (storedEmail) {
+      setEmail(storedEmail)
+      setEmailSubmitted(true)
+    }
     const month = new Date().toISOString().slice(0, 7)
     const used = parseInt(localStorage.getItem('sg_uses_' + month) || '0')
     setUsesLeft(Math.max(0, 3 - used))
@@ -18,9 +27,16 @@ export default function Home() {
 
   async function generate() {
     if (!brief.trim() || !request.trim()) return
+
+    if (!emailSubmitted) {
+      setShowEmailModal(true)
+      return
+    }
+
     const month = new Date().toISOString().slice(0, 7)
     const used = parseInt(localStorage.getItem('sg_uses_' + month) || '0')
-    if (used >= 3) { setShowUpgrade(true); return }
+    if (used >= 3 && !isPaid) { setShowUpgrade(true); return }
+
     setLoading(true)
     try {
       const res = await fetch('/api/generate', {
@@ -49,248 +65,148 @@ export default function Home() {
       minHeight: '100vh',
       background: '#080C0A',
       color: '#fff',
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
+      fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif'
     }}>
 
-      {/* ── AMBIENT GLOW BACKGROUND ── */}
       <div style={{
-        position: 'fixed',
-        top: 0, left: 0, right: 0, bottom: 0,
-        pointerEvents: 'none',
-        zIndex: 0,
-        overflow: 'hidden'
+        position: 'fixed', inset: 0,
+        pointerEvents: 'none', zIndex: 0, overflow: 'hidden'
       }}>
         <div style={{
-          position: 'absolute',
-          top: '-20%',
-          left: '50%',
+          position: 'absolute', top: '-20%', left: '50%',
           transform: 'translateX(-50%)',
-          width: '900px',
-          height: '600px',
+          width: '900px', height: '600px',
           background: 'radial-gradient(ellipse, rgba(74,192,104,0.12) 0%, transparent 65%)',
-          borderRadius: '50%'
-        }} />
-        <div style={{
-          position: 'absolute',
-          bottom: '-10%',
-          right: '-10%',
-          width: '600px',
-          height: '600px',
-          background: 'radial-gradient(ellipse, rgba(34,139,60,0.07) 0%, transparent 65%)',
           borderRadius: '50%'
         }} />
       </div>
 
-      {/* ── HEADER ── */}
       <header style={{
-        display: 'flex',
-        alignItems: 'center',
+        display: 'flex', alignItems: 'center',
         justifyContent: 'space-between',
         padding: '18px 48px',
         borderBottom: '1px solid rgba(255,255,255,0.05)',
-        position: 'sticky',
-        top: 0,
+        position: 'sticky', top: 0,
         background: 'rgba(8,12,10,0.80)',
         backdropFilter: 'blur(24px)',
-        WebkitBackdropFilter: 'blur(24px)',
         zIndex: 100
       }}>
-        {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <img
-            src="/logo.png"
-            alt="Clovert"
-            style={{ height: '34px', width: 'auto' }}
-          />
+          <img src="/logo.png" alt="Clovert" style={{ height: '34px', width: 'auto' }} />
           <span style={{
-            fontSize: '18px',
-            fontWeight: '700',
-            letterSpacing: '-0.4px',
+            fontSize: '18px', fontWeight: '700', letterSpacing: '-0.4px',
             background: 'linear-gradient(135deg, #7EE89A, #3DB85C)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
           }}>Clovert</span>
         </div>
-
-        {/* Right side */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{
             fontSize: '13px',
             color: usesLeft > 0 ? '#7EE89A' : '#f87171',
             background: usesLeft > 0 ? 'rgba(126,232,154,0.08)' : 'rgba(248,113,113,0.08)',
-            border: `1px solid ${usesLeft > 0 ? 'rgba(126,232,154,0.18)' : 'rgba(248,113,113,0.18)'}`,
-            padding: '6px 14px',
-            borderRadius: '20px',
-            fontWeight: '500'
+            border: '1px solid ' + (usesLeft > 0 ? 'rgba(126,232,154,0.18)' : 'rgba(248,113,113,0.18)'),
+            padding: '6px 14px', borderRadius: '20px', fontWeight: '500'
           }}>
-            {usesLeft} free {usesLeft === 1 ? 'use' : 'uses'} remaining
+            {isPaid ? 'Pro — Unlimited' : usesLeft + ' free uses remaining'}
           </div>
-          <a href="/upgrade" style={{
-            fontSize: '13px',
-            color: '#080C0A',
-            background: 'linear-gradient(135deg, #7EE89A, #3DB85C)',
-            padding: '7px 18px',
-            borderRadius: '8px',
-            textDecoration: 'none',
-            fontWeight: '600',
-            letterSpacing: '-0.1px'
-          }}>
-            Upgrade Pro
-          </a>
+          {!isPaid && (
+            <a href="/upgrade" style={{
+              fontSize: '13px', color: '#080C0A',
+              background: 'linear-gradient(135deg, #7EE89A, #3DB85C)',
+              padding: '7px 18px', borderRadius: '8px',
+              textDecoration: 'none', fontWeight: '600'
+            }}>Upgrade Pro</a>
+          )}
         </div>
       </header>
 
-      {/* ── HERO ── */}
       <section style={{
-        maxWidth: '780px',
-        margin: '0 auto',
-        padding: '88px 40px 64px',
-        textAlign: 'center',
-        position: 'relative',
-        zIndex: 1
+        maxWidth: '780px', margin: '0 auto',
+        padding: '88px 40px 64px', textAlign: 'center',
+        position: 'relative', zIndex: 1
       }}>
-
-        {/* Pill badge */}
         <div style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px',
+          display: 'inline-flex', alignItems: 'center', gap: '8px',
           background: 'rgba(126,232,154,0.07)',
           border: '1px solid rgba(126,232,154,0.18)',
-          borderRadius: '20px',
-          padding: '6px 16px',
-          fontSize: '12px',
-          color: '#7EE89A',
-          fontWeight: '600',
-          letterSpacing: '0.06em',
-          textTransform: 'uppercase',
-          marginBottom: '32px'
+          borderRadius: '20px', padding: '6px 16px',
+          fontSize: '12px', color: '#7EE89A', fontWeight: '600',
+          letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '32px'
         }}>
           <span style={{
-            width: '6px', height: '6px',
-            borderRadius: '50%',
-            background: '#7EE89A',
-            display: 'inline-block',
+            width: '6px', height: '6px', borderRadius: '50%',
+            background: '#7EE89A', display: 'inline-block',
             boxShadow: '0 0 6px #7EE89A'
           }} />
-          The freelancer's scope creep tool
+          The freelancer scope creep tool
         </div>
 
-        {/* Headline */}
         <h1 style={{
-          fontSize: 'clamp(38px, 5.5vw, 60px)',
-          fontWeight: '800',
-          lineHeight: '1.08',
-          letterSpacing: '-2px',
-          marginBottom: '22px'
+          fontSize: 'clamp(38px, 5.5vw, 60px)', fontWeight: '800',
+          lineHeight: '1.08', letterSpacing: '-2px', marginBottom: '22px'
         }}>
           <span style={{ color: '#fff' }}>Turn scope creep into a</span>
           <br />
           <span style={{
             background: 'linear-gradient(135deg, #7EE89A 0%, #3DB85C 50%, #2A9446 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }}>
-            professional change order
-          </span>
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
+          }}>professional change order</span>
         </h1>
 
-        {/* Subheading */}
         <p style={{
-          fontSize: '18px',
-          color: 'rgba(255,255,255,0.45)',
-          lineHeight: '1.7',
-          maxWidth: '500px',
-          margin: '0 auto 52px'
+          fontSize: '18px', color: 'rgba(255,255,255,0.45)',
+          lineHeight: '1.7', maxWidth: '500px', margin: '0 auto 52px'
         }}>
           Paste your original brief and what your client just asked for.
           Get a ready-to-send document in 60 seconds.
         </p>
 
-        {/* Stats */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: '0',
-          marginBottom: '0'
-        }}>
-          {[
-            ['28M+', 'Freelancers globally'],
-            ['£6,800', 'Lost per year avg.'],
-            ['60 sec', 'To generate'],
-          ].map(([val, label], i) => (
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '0', marginBottom: '0' }}>
+          {[['28M+','Freelancers globally'],['£6,800','Lost per year avg.'],['60 sec','To generate']].map(([val, label], i) => (
             <div key={val} style={{
-              textAlign: 'center',
-              padding: '0 36px',
+              textAlign: 'center', padding: '0 36px',
               borderRight: i < 2 ? '1px solid rgba(255,255,255,0.07)' : 'none'
             }}>
               <div style={{
-                fontSize: '24px',
-                fontWeight: '800',
-                letterSpacing: '-0.8px',
+                fontSize: '24px', fontWeight: '800', letterSpacing: '-0.8px',
                 background: 'linear-gradient(135deg, #7EE89A, #3DB85C)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
               }}>{val}</div>
               <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', marginTop: '4px' }}>{label}</div>
             </div>
           ))}
         </div>
-
       </section>
 
-      {/* ── MAIN TOOL ── */}
       <section style={{
-        maxWidth: '940px',
-        margin: '0 auto',
-        padding: '0 40px 100px',
-        position: 'relative',
-        zIndex: 1
+        maxWidth: '940px', margin: '0 auto',
+        padding: '0 40px 100px', position: 'relative', zIndex: 1
       }}>
-
-        {/* Input cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: '14px', marginBottom: '14px'
+        }}>
           {[
-            {
-              label: 'Your original brief',
-              value: brief,
-              setter: setBrief,
-              placeholder: 'Paste the original scope agreed with your client — the contract, brief email, or project outline...',
-              icon: '📄'
-            },
-            {
-              label: "Client's new request",
-              value: request,
-              setter: setRequest,
-              placeholder: "Paste exactly what they're now asking for — the message, list of additions, or verbal request...",
-              icon: '📨'
-            }
+            { label: 'Your original brief', value: brief, setter: setBrief, placeholder: 'Paste the original scope agreed with your client...', icon: '📄' },
+            { label: "Client's new request", value: request, setter: setRequest, placeholder: "Paste exactly what they're now asking for...", icon: '📨' }
           ].map(({ label, value, setter, placeholder, icon }) => (
             <div key={label} style={{
               background: 'rgba(255,255,255,0.025)',
-              border: `1px solid ${value.length > 0 ? 'rgba(126,232,154,0.2)' : 'rgba(255,255,255,0.07)'}`,
-              borderRadius: '16px',
-              padding: '22px 24px',
-              transition: 'border-color 0.3s'
+              border: '1px solid ' + (value.length > 0 ? 'rgba(126,232,154,0.2)' : 'rgba(255,255,255,0.07)'),
+              borderRadius: '16px', padding: '22px 24px', transition: 'border-color 0.3s'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
                 <span style={{ fontSize: '14px' }}>{icon}</span>
                 <label style={{
-                  fontSize: '11px',
-                  fontWeight: '700',
-                  letterSpacing: '0.08em',
+                  fontSize: '11px', fontWeight: '700', letterSpacing: '0.08em',
                   textTransform: 'uppercase',
                   color: value.length > 0 ? '#7EE89A' : 'rgba(255,255,255,0.35)'
                 }}>{label}</label>
                 {value.length > 0 && (
-                  <span style={{
-                    marginLeft: 'auto',
-                    fontSize: '11px',
-                    color: 'rgba(255,255,255,0.25)'
-                  }}>{value.length} chars</span>
+                  <span style={{ marginLeft: 'auto', fontSize: '11px', color: 'rgba(255,255,255,0.25)' }}>
+                    {value.length} chars
+                  </span>
                 )}
               </div>
               <textarea
@@ -298,51 +214,34 @@ export default function Home() {
                 onChange={e => setter(e.target.value)}
                 placeholder={placeholder}
                 style={{
-                  width: '100%',
-                  height: '210px',
-                  background: 'transparent',
-                  border: 'none',
-                  outline: 'none',
-                  resize: 'none',
-                  fontSize: '14px',
-                  lineHeight: '1.75',
-                  color: 'rgba(255,255,255,0.8)',
-                  fontFamily: 'inherit'
+                  width: '100%', height: '210px', background: 'transparent',
+                  border: 'none', outline: 'none', resize: 'none',
+                  fontSize: '14px', lineHeight: '1.75',
+                  color: 'rgba(255,255,255,0.8)', fontFamily: 'inherit'
                 }}
               />
             </div>
           ))}
         </div>
 
-        {/* Generate button */}
         <button
           onClick={generate}
           disabled={loading || !brief.trim() || !request.trim()}
           style={{
-            width: '100%',
-            padding: '19px',
+            width: '100%', padding: '19px',
             background: loading || !brief.trim() || !request.trim()
               ? 'rgba(255,255,255,0.05)'
               : 'linear-gradient(135deg, #7EE89A 0%, #3DB85C 55%, #2A9446 100%)',
             border: loading || !brief.trim() || !request.trim()
-              ? '1px solid rgba(255,255,255,0.07)'
-              : 'none',
-            borderRadius: '12px',
-            fontSize: '15px',
-            fontWeight: '700',
+              ? '1px solid rgba(255,255,255,0.07)' : 'none',
+            borderRadius: '12px', fontSize: '15px', fontWeight: '700',
             color: loading || !brief.trim() || !request.trim()
-              ? 'rgba(255,255,255,0.2)'
-              : '#fff',
+              ? 'rgba(255,255,255,0.2)' : '#fff',
             cursor: loading || !brief.trim() || !request.trim() ? 'not-allowed' : 'pointer',
-            letterSpacing: '-0.2px',
-            transition: 'all 0.25s',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '10px',
+            transition: 'all 0.25s', display: 'flex',
+            alignItems: 'center', justifyContent: 'center', gap: '10px',
             boxShadow: loading || !brief.trim() || !request.trim()
-              ? 'none'
-              : '0 4px 32px rgba(61,184,92,0.25)'
+              ? 'none' : '0 4px 32px rgba(61,184,92,0.25)'
           }}
         >
           {loading ? (
@@ -350,155 +249,102 @@ export default function Home() {
               <span style={{
                 width: '16px', height: '16px',
                 border: '2px solid rgba(255,255,255,0.25)',
-                borderTopColor: '#fff',
-                borderRadius: '50%',
-                display: 'inline-block',
-                animation: 'spin 0.75s linear infinite'
+                borderTopColor: '#fff', borderRadius: '50%',
+                display: 'inline-block', animation: 'spin 0.75s linear infinite'
               }} />
               Generating your change order...
             </>
-          ) : (
-            'Generate Change Order →'
-          )}
+          ) : 'Generate Change Order →'}
         </button>
 
-        {/* Result panel */}
         {result && (
           <div style={{
             marginTop: '28px',
             background: 'rgba(126,232,154,0.03)',
             border: '1px solid rgba(126,232,154,0.18)',
-            borderRadius: '16px',
-            overflow: 'hidden'
+            borderRadius: '16px', overflow: 'hidden'
           }}>
-            {/* Result header */}
             <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '14px 24px',
               borderBottom: '1px solid rgba(126,232,154,0.1)',
               background: 'rgba(126,232,154,0.05)'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div style={{
-                  width: '8px', height: '8px',
-                  borderRadius: '50%',
-                  background: '#7EE89A',
-                  boxShadow: '0 0 8px rgba(126,232,154,0.6)'
+                  width: '8px', height: '8px', borderRadius: '50%',
+                  background: '#7EE89A', boxShadow: '0 0 8px rgba(126,232,154,0.6)'
                 }} />
                 <span style={{ fontSize: '13px', fontWeight: '600', color: '#7EE89A' }}>
                   Change Order Ready
                 </span>
               </div>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button
-                  onClick={copyToClipboard}
-                  style={{
-                    fontSize: '13px',
-                    color: copied ? '#7EE89A' : 'rgba(255,255,255,0.45)',
-                    background: copied ? 'rgba(126,232,154,0.1)' : 'rgba(255,255,255,0.05)',
-                    border: `1px solid ${copied ? 'rgba(126,232,154,0.25)' : 'rgba(255,255,255,0.1)'}`,
-                    padding: '6px 16px',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontWeight: '500',
-                    transition: 'all 0.2s',
-                    fontFamily: 'inherit'
-                  }}
-                >
-                  {copied ? '✓ Copied' : 'Copy'}
-                </button>
-              </div>
+              <button
+                onClick={copyToClipboard}
+                style={{
+                  fontSize: '13px',
+                  color: copied ? '#7EE89A' : 'rgba(255,255,255,0.45)',
+                  background: copied ? 'rgba(126,232,154,0.1)' : 'rgba(255,255,255,0.05)',
+                  border: '1px solid ' + (copied ? 'rgba(126,232,154,0.25)' : 'rgba(255,255,255,0.1)'),
+                  padding: '6px 16px', borderRadius: '8px', cursor: 'pointer',
+                  fontWeight: '500', transition: 'all 0.2s', fontFamily: 'inherit'
+                }}
+              >
+                {copied ? '✓ Copied' : 'Copy'}
+              </button>
             </div>
-            {/* Result content */}
             <pre style={{
-              padding: '28px 28px',
-              fontSize: '14px',
-              lineHeight: '1.85',
-              color: 'rgba(255,255,255,0.7)',
-              whiteSpace: 'pre-wrap',
-              fontFamily: "'SF Mono', 'Fira Code', 'Courier New', monospace",
-              margin: 0
+              padding: '28px', fontSize: '14px', lineHeight: '1.85',
+              color: 'rgba(255,255,255,0.7)', whiteSpace: 'pre-wrap',
+              fontFamily: "'SF Mono', 'Fira Code', monospace", margin: 0
             }}>{result}</pre>
           </div>
         )}
 
-        {/* Upgrade prompt */}
         {showUpgrade && (
           <div style={{
             marginTop: '24px',
             background: 'rgba(126,232,154,0.04)',
             border: '1px solid rgba(126,232,154,0.2)',
-            borderRadius: '16px',
-            padding: '40px',
-            textAlign: 'center'
+            borderRadius: '16px', padding: '40px', textAlign: 'center'
           }}>
-            <div style={{
-              fontSize: '22px',
-              fontWeight: '800',
-              marginBottom: '10px',
-              letterSpacing: '-0.5px'
-            }}>
+            <div style={{ fontSize: '22px', fontWeight: '800', marginBottom: '10px', letterSpacing: '-0.5px' }}>
               You have used your 3 free change orders
             </div>
-            <p style={{
-              fontSize: '15px',
-              color: 'rgba(255,255,255,0.45)',
-              marginBottom: '28px',
-              lineHeight: '1.65'
-            }}>
-              Upgrade to Pro for unlimited change orders,<br />PDF downloads, and saved history.
+            <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.45)', marginBottom: '28px', lineHeight: '1.65' }}>
+              Upgrade to Pro for unlimited change orders, PDF downloads, and saved history.
             </p>
             <a href="/upgrade" style={{
               display: 'inline-block',
               background: 'linear-gradient(135deg, #7EE89A, #3DB85C)',
-              color: '#fff',
-              padding: '15px 36px',
-              borderRadius: '10px',
-              textDecoration: 'none',
-              fontWeight: '700',
-              fontSize: '15px',
-              letterSpacing: '-0.2px',
-              boxShadow: '0 4px 24px rgba(61,184,92,0.3)'
+              color: '#fff', padding: '15px 36px', borderRadius: '10px',
+              textDecoration: 'none', fontWeight: '700', fontSize: '15px',
+              letterSpacing: '-0.2px', boxShadow: '0 4px 24px rgba(61,184,92,0.3)'
             }}>
-              Upgrade to Pro — £12/month
+              Upgrade to Clovert Pro — £12/month
             </a>
             <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)', marginTop: '14px' }}>
               Cancel any time · Secure payment via Stripe
             </div>
           </div>
         )}
-
       </section>
 
-      {/* ── HOW IT WORKS ── */}
       <section style={{
         borderTop: '1px solid rgba(255,255,255,0.05)',
         padding: '80px 40px 100px',
-        maxWidth: '940px',
-        margin: '0 auto',
-        position: 'relative',
-        zIndex: 1
+        maxWidth: '940px', margin: '0 auto', position: 'relative', zIndex: 1
       }}>
         <div style={{ textAlign: 'center', marginBottom: '52px' }}>
           <div style={{
-            fontSize: '11px',
-            color: 'rgba(255,255,255,0.25)',
-            fontWeight: '700',
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
-            marginBottom: '14px'
+            fontSize: '11px', color: 'rgba(255,255,255,0.25)', fontWeight: '700',
+            letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '14px'
           }}>How it works</div>
-          <h2 style={{
-            fontSize: '34px',
-            fontWeight: '800',
-            letterSpacing: '-0.8px',
-            color: '#fff'
-          }}>Three steps. One document.</h2>
+          <h2 style={{ fontSize: '34px', fontWeight: '800', letterSpacing: '-0.8px', color: '#fff' }}>
+            Three steps. One document.
+          </h2>
         </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
           {[
             { n: '01', title: 'Paste your brief', desc: 'Add the original scope agreed with your client — email, contract, or brief.' },
             { n: '02', title: "Add their request", desc: 'Paste exactly what they are now asking for that goes beyond what was agreed.' },
@@ -507,54 +353,103 @@ export default function Home() {
             <div key={n} style={{
               background: 'rgba(255,255,255,0.02)',
               border: '1px solid rgba(255,255,255,0.06)',
-              borderRadius: '16px',
-              padding: '30px 28px'
+              borderRadius: '16px', padding: '30px 28px'
             }}>
               <div style={{
-                fontSize: '13px',
-                fontWeight: '800',
+                fontSize: '13px', fontWeight: '800',
                 background: 'linear-gradient(135deg, #7EE89A, #3DB85C)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                marginBottom: '16px',
-                letterSpacing: '0.04em'
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                marginBottom: '16px', letterSpacing: '0.04em'
               }}>{n}</div>
-              <div style={{
-                fontSize: '16px',
-                fontWeight: '700',
-                marginBottom: '10px',
-                letterSpacing: '-0.3px',
-                color: '#fff'
-              }}>{title}</div>
-              <div style={{
-                fontSize: '14px',
-                color: 'rgba(255,255,255,0.38)',
-                lineHeight: '1.7'
-              }}>{desc}</div>
+              <div style={{ fontSize: '16px', fontWeight: '700', marginBottom: '10px', letterSpacing: '-0.3px', color: '#fff' }}>{title}</div>
+              <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.38)', lineHeight: '1.7' }}>{desc}</div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
       <footer style={{
         borderTop: '1px solid rgba(255,255,255,0.05)',
-        padding: '28px 48px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        position: 'relative',
-        zIndex: 1
+        padding: '28px 48px', display: 'flex',
+        alignItems: 'center', justifyContent: 'space-between',
+        position: 'relative', zIndex: 1
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <img src="/logo.png" alt="Clovert" style={{ height: '22px', width: 'auto', opacity: 0.7 }} />
           <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.25)', fontWeight: '600' }}>Clovert</span>
         </div>
-        <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)' }}>
-          Built for freelancers · Stop losing money to scope creep
+        <div style={{ display: 'flex', gap: '20px' }}>
+          <a href="/faq" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>FAQ</a>
+          <a href="/privacy" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>Privacy</a>
+          <a href="/terms" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)', textDecoration: 'none' }}>Terms</a>
         </div>
       </footer>
+
+      {showEmailModal && (
+        <div style={{
+          position: 'fixed', inset: 0,
+          background: 'rgba(0,0,0,0.85)',
+          display: 'flex', alignItems: 'center',
+          justifyContent: 'center', zIndex: 999, padding: '20px'
+        }}>
+          <div style={{
+            background: '#111',
+            border: '1px solid rgba(126,232,154,0.2)',
+            borderRadius: '16px', padding: '40px',
+            maxWidth: '400px', width: '100%', textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '20px', fontWeight: '800', color: '#fff', marginBottom: '10px' }}>
+              Where should we send your change order?
+            </div>
+            <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)', marginBottom: '24px', lineHeight: '1.65' }}>
+              Enter your email to get your free change order. No spam, ever.
+            </p>
+            <input
+              type="email"
+              placeholder="your@email.com"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && email.includes('@')) {
+                  localStorage.setItem('clovert_email', email)
+                  setEmailSubmitted(true)
+                  setShowEmailModal(false)
+                  setTimeout(generate, 100)
+                }
+              }}
+              style={{
+                width: '100%', padding: '14px',
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '8px', color: '#fff', fontSize: '15px',
+                marginBottom: '14px', fontFamily: 'inherit', outline: 'none'
+              }}
+            />
+            <button
+              onClick={() => {
+                if (email.includes('@')) {
+                  localStorage.setItem('clovert_email', email)
+                  setEmailSubmitted(true)
+                  setShowEmailModal(false)
+                  setTimeout(generate, 100)
+                }
+              }}
+              style={{
+                width: '100%', padding: '14px',
+                background: 'linear-gradient(135deg, #7EE89A, #3DB85C)',
+                border: 'none', borderRadius: '8px', color: '#fff',
+                fontSize: '15px', fontWeight: '700', cursor: 'pointer',
+                fontFamily: 'inherit'
+              }}
+            >
+              Get my free change order
+            </button>
+            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.2)', marginTop: '12px' }}>
+              Free forever · No credit card required
+            </p>
+          </div>
+        </div>
+      )}
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg) } }
